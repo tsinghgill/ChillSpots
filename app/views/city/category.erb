@@ -1,0 +1,189 @@
+<div id="parent-container" class="container-fluid">
+  <div class="row">
+    <div class="col-md-6" id="map" style="width:500px;height:500px;"></div>
+    <div class="col-md-6">
+        <div class="row" id = "mood-selectors">
+          <div class="input-group" data-toggle="buttons" id = "mood-button">
+            <label class="btn">
+            <input type="checkbox" autocomplete="off" name="Exciting" value="Exciting">Exciting</label>
+            <label class="btn">
+            <input type="checkbox" autocomplete="off" name="Romantic" value="Romantic">Romantic</label>
+            <label class="btn">
+            <input type="checkbox" autocomplete="off" name="Relaxing" value="Relaxing">Relaxing</label>
+            <label class="btn">
+            <input type="checkbox" autocomplete="off" name="Rewarding" value="Rewarding">Rewarding</label>
+          </div>
+        </div>
+        <div class = "row">
+          <div id="container-grid">
+            <ul id="chill-spot-list">
+              <% spots = @current_city.spots.all.where(category_id: @current_category.id).order(num_votes: :desc) %>
+              <% i = 1 %>
+              <% if spots.empty? %>
+                <h4 id="no-spots"> There are currently no chill spots for <%= @current_city.name %>!</h4>
+              <% end %>
+              <% spots.each do |spot| %>
+                  <li class="chill-spot" data-spot-id="<%= spot.id %>">
+                    <h3><%= spot.title %></h3>
+                    <h5>Spot #: <%= spot.id %></h5>
+                    <p>
+                      <%= spot.description %>
+                      <br>
+                        <span class="label label-default"><%= spot.vibes[0].label if spot.vibes[0] %></span>
+                        <span class="label label-default"><%= spot.vibes[1].label if spot.vibes[1] %></span>
+                        <span class="label label-default"><%= spot.vibes[2].label if spot.vibes[2] %></span>
+                        <br>
+                      <img id = "chill-spot-img" alt="No image" height="32" src="images/<%= spot.id %>_spot_image.jpg"/>
+                        <div class="wrap">
+                          <div class="vote up">
+                            <form action="<%=@current_city.name %>/<%= @current_category.name%>/upvote/spot/<%= spot.id %>" method="post">
+                              <button type="submit">
+                                <i class="fa fa-angle-up"></i>
+                              </button>
+                            </form>
+                          </div>
+                          <div class="stat">
+                            <span class="score" id = "spot_<%=spot.id%>"><%=spot.num_votes || 0%>
+                            </span>
+                          </div>
+                          <div class="vote down">
+                            <form action="<%=@current_city.name %>/<%= @current_category.name%>/downvote/spot/<%= spot.id %>" method="post">
+                              <button type="submit">
+                                <i class="fa fa-angle-down"></i>
+                              </button>
+                            </form>
+                          </div>
+                        </div>
+                      </p>
+                    </li>
+                  <% i+=1 %>
+                <% end %>
+              </ul>
+            </div>
+          </div>
+          <% if current_user %>
+            <div class="add_spot_btn">
+              <a href="/city/<%=@current_city.id%>/new"><button type="link" class="btn btn-lg btn-block">Add a spot</button></a>
+            </div>
+          <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+$(function(){
+  $(".increment").click(function(){
+    var count = parseInt($("~ .count", this).text());
+    if($(this).hasClass("up")) {
+      var count = count + 1;
+       $("~ .count", this).text(count);
+    } else {
+      var count = count - 1;
+       $("~ .count", this).text(count);
+    }
+    $(this).parent().addClass("bump");
+    setTimeout(function(){
+      $(this).parent().removeClass("bump");
+    }, 400);
+  });
+});
+</script>
+<script>
+    var filters = {};
+    var gMarkers = [];
+    var getData = function() {
+      // REMOVE ERB
+      $.ajax({
+        url:'/city_data?city=<%=@current_city.id%>&category=<%=@current_category.id%>',
+        data: filters,
+        success: function(data) {
+          all_data = JSON.parse(data)
+          city = all_data.city
+          category = all_data.category
+          spots = all_data.spots
+          var city_lat = parseFloat(city.latitude)
+          var city_lon = parseFloat(city.longitude)*(-1)
+          var mapDiv = document.getElementById('map');
+          window.map = new google.maps.Map(mapDiv, {
+            center: {lat: city_lat, lng: city_lon},
+            zoom: 15
+          });
+          for (var i = 0; i < spots.length; i++){
+            var myLatLng = {lat: parseFloat(spots[i].latitude), lng: parseFloat(spots[i].longitude)}
+            var marker = new google.maps.Marker({
+               position: myLatLng,
+               map: window.map,
+               label: (spots[i]).id.toString()
+             });
+            gMarkers.push(marker);
+          };
+        }
+      });
+    }
+    var getSpotsInfo = function() {
+      // REMOVE ERB
+      $.ajax({
+        url: '/filtered_spots?city=<%=@current_city.id%>',
+        data: filters,
+        success: renderSpots,
+        dataType: 'JSON'
+      })
+    }
+    var renderSpots = function(spots) {
+      for (var j = 0; j < gMarkers.length; j++) {
+        gMarkers[j].setMap(null);
+      }
+      gMarkers = [];
+      for (var i = 0; i < spots.length; i++){
+        var myLatLng = {lat: parseFloat(spots[i].latitude), lng: parseFloat(spots[i].longitude)}
+        var marker = new google.maps.Marker({
+           position: myLatLng,
+           map: window.map,
+           label: (spots[i].id).toString()
+         });
+        gMarkers.push(marker);
+      };
+      displaySpots(spots);
+    }
+    var displaySpots = function(spots) {
+      var spot_ids = [];
+      for (var i = 0; i<spots.length; i++){
+        spot_ids.push(spots[i].id);
+      };
+      $(".chill-spot").each(function(i, obj){
+        var id = $(this).data('spot-id');
+        if (spot_ids.indexOf(id) === -1){
+          $(this).hide();
+        }
+        else{
+          $(this).show();
+        }
+      });
+    }
+    $(':checkbox').change(function() {
+      // Returns an array of selected checkbox values
+      filters['options'] = $('#mood-button').find('input:checked').map(function(index, object){return object.name}).toArray();
+      getSpotsInfo();
+    })
+    $("li.chill-spot .wrap").on('click', function(e) {
+      var target = $(e.target);
+      var form = target.closest('form');
+      e.preventDefault();
+      $.ajax({
+        url: form.attr('action'),
+        type: 'POST',
+        data: form.serialize(),
+        success: function(response_data){
+          $('#spot_' + response_data.id.toString()).html(response_data.votes_count);
+        },
+        error: function(){
+          alert("You can only vote once!");
+        }
+      })
+    });
+    function initMap() {
+      getData()
+    }
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?callback=initMap" async defer></script>

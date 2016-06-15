@@ -1,0 +1,131 @@
+<div id = "category-grid">
+    <section class="no-padding" id="portfolio">
+        <div class="container-fluid">
+            <div class="row no-gutter">
+                <div class="col-lg-4 col-sm-6">
+                    <a href="/city/<%=@current_city.id%>/<%=Category.all[0].id%>" class="category">
+                      <img src="img/portfolio/nic.jpg" class="img-responsive" alt="">
+                        <div class="category-caption">
+                            <div class="category-caption-content">
+                                <div class="project-name">
+                                    <%=Category.all[0].name%>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                    <a href="/city/<%=@current_city.id%>/<%=Category.all[1].id%>" class="category">
+                        <img src="img/portfolio/active.jpg" class="img-responsive" alt="">
+                        <div class="category-caption">
+                            <div class="category-caption-content">
+                                <div class="project-name">
+                                    <%=Category.all[1].name%>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                    <a href="/city/<%=@current_city.id%>/<%=Category.all[2].id%>" class="category">
+                        <img src="img/portfolio/adventure.jpg" class="img-responsive" alt="">
+                        <div class="category-caption">
+                            <div class="category-caption-content">
+                                <div class="project-name">
+                                    <%=Category.all[2].name%>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                    <a href="/city/<%=@current_city.id%>/<%=Category.all[3].id%>" class="category">
+                        <img src="img/portfolio/food.jpg" class="img-responsive" alt="">
+                        <div class="category-caption">
+                            <div class="category-caption-content">
+                                <div class="project-name">
+                                    <%=Category.all[3].name%>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <% if current_user %>
+                <div class="col-lg-4 col-sm-6">
+                    <a href="/city/<%=@current_city.id%>/new" class="category">
+                        <img src="img/portfolio/add_spot.jpg" class="img-responsive" alt="">
+                        <div class="category-caption">
+                            <div class="category-caption-content">
+                                <div class="project-name">
+                                    Add a New Spot
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <% else %>
+                <div class="col-lg-4 col-sm-6">
+                    <a href="/users/login" class="category">
+                        <img src="img/portfolio/add_spot.jpg" class="img-responsive" alt="">
+                        <div class="category-caption">
+                            <div class="category-caption-content">
+                                <div class="project-name">
+                                    Login to add a spot +
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <% end %>
+                 <div class="col-lg-4 col-sm-6">
+                    <a href="/city/<%=@current_city.id%>/<%=Category.all[4].id%>" class="category">
+                        <img src="img/portfolio/art.jpg" class="img-responsive" alt="">
+                        <div class="category-caption">
+                            <div class="category-caption-content">
+                                <div class="project-name">
+                                    <%=Category.all[4].name%>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                 <div class="col-lg-4 col-sm-6">
+                    <a href="/city/<%=@current_city.id%>/<%=Category.all[5].id%>" class="category">
+                        <img src="img/portfolio/hiddenstock.jpg" class="img-responsive" alt="">
+                        <div class="category-caption">
+                            <div class="category-caption-content">
+                                <div class="project-name">
+                                    <%=Category.all[5].name%>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                 <div class="col-lg-4 col-sm-6">
+                    <a href="/city/<%=@current_city.id%>/<%=Category.all[6].id%>" class="category">
+                        <img src="img/portfolio/familyfriendlystock.jpg" class="img-responsive" alt="">
+                        <div class="category-caption">
+                            <div class="category-caption-content">
+                                <div class="project-name">
+                                      <%=Category.all[6].name%>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                    <a href="/city/<%=@current_city.id%>/<%=Category.all[7].id%>" class="category">
+                        <img src="img/portfolio/golfstock.jpg" class="img-responsive" alt="">
+                        <div class="category-caption">
+                            <div class="category-caption-content">
+                                <div class="project-name">
+                                  <%=Category.all[7].name%>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+  </div>

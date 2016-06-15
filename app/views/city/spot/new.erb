@@ -1,0 +1,172 @@
+<% if @spot && @spot.errors.any? %>
+  <div class="error-msg">
+    <i class="fa fa-times-circle"></i>
+    <ul id="error-list">
+      <% @spot.errors.full_messages.each do |spot_error| %>
+        <li class="list-group-item"><%= spot_error %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<div class="container">
+  <div class="row" id ="row-new-spot">
+    <div class="col-md-6">
+      <div id="map" style="width:500px;height:500px;"></div>
+        <div id="floating-panel-new">
+          <input id="address" type="textbox" placeholder="Enter your spot">
+          <input id="submit" type="button" value="Please enter a location">
+        </div>
+      </div>
+    <div class="col-md-6" id="form-new-spot">
+      <form class ="form-group row" method="post" action="/city/<%=@current_city.name%>/new" enctype="multipart/form-data">
+        <h1 class="form-signin-heading">Add a Spot</h1>
+          <div class="row">
+            <label class="form-signin-heading text-muted">Name:</label>
+            <input class="form-control" type="text" name="title" placeholder="Name" >
+          </div>
+        <div class="row">
+           <label class="form-signin-heading text-muted">Description:</label>
+           <input class="form-control" type="text" name="description" placeholder="Description">
+        </div>
+        <div class="row">
+            <label for="sel1" class="form-signin-heading text-muted">Select a Category:</label>
+            <select class="form-control" id="sel1" name="category_selection">
+              <option value="<%= Category.all[0].id %>"><%= Category.all[0].name %></option>
+              <option value="<%= Category.all[1].id %>"><%= Category.all[1].name %></option>
+              <option value="<%= Category.all[2].id %>"><%= Category.all[2].name %></option>
+              <option value="<%= Category.all[3].id %>"><%= Category.all[3].name %></option>
+              <option value="<%= Category.all[4].id %>"><%= Category.all[4].name %></option>
+              <option value="<%= Category.all[5].id %>"><%= Category.all[5].name %></option>
+              <option value="<%= Category.all[6].id %>"><%= Category.all[6].name %></option>
+              <option value="<%= Category.all[7].id %>"><%= Category.all[7].name %></option>
+            </select>
+          </div>
+        <div class="row">
+            <input type="file" name="file" id="file" class="inputfile" />
+            <label for="file">Upload Image</label>
+          </div>
+        <div class="row">
+          <div class="input-group" data-toggle="buttons">
+              <label class="btn">
+              <input type="checkbox" autocomplete="off" name="vibe_one" value = "<%=Vibe.all[0].id%>"><%= Vibe.all[0].label %></label>
+              <label class="btn">
+              <input type="checkbox" autocomplete="off" name="vibe_two" value = "<%=Vibe.all[1].id%>"><%= Vibe.all[1].label %></label>
+              <label class="btn">
+              <input type="checkbox" autocomplete="off" name="vibe_three" value = "<%=Vibe.all[2].id%>"><%= Vibe.all[2].label %></label>
+              <label class="btn">
+              <input type="checkbox" autocomplete="off" name="vibe_four" value = "<%=Vibe.all[3].id%>"><%= Vibe.all[3].label %></label>
+          </div>
+        </div>
+        <div class="row" id = "form-group-row">
+          <div class="input-group">
+            <button type="submit" class="btn btn-md btn-primary btn-block">Create Spot</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-group">
+            <label for="custom-add-btn" class="form-signin-heading text-muted">Can't find your spot?</label>
+            <button id="custom-add-btn" class="btn btn-md btn-primary btn-block">Get Location Manually</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="result_lat"><input id="latitude" type="hidden" name="lat"></div>
+          <div class="result_long"><input id="longitude" type="hidden" name="long"></div>
+        </div>
+        <div class="row">
+          <div class="marker_lat"><input id="marker-latitude" type="hidden" name="marker-lat"></div>
+          <div class="marker_long"><input id="marker-longitude" type="hidden" name="marker-long"></div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function initMap() {
+  var city_data = {};
+  $.ajax({
+    url:'/city_data_new?city=<%=@current_city.id%>',
+    success: function(data){
+      parsed_data = JSON.parse(data)
+      city_lat = parseFloat(parsed_data.city.latitude)
+      city_lng = parseFloat(parsed_data.city.longitude)*(-1)
+      city_data.lat = city_lat
+      city_data.lng = city_lng
+      var map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 10,
+        center: {lat: city_data.lat, lng: city_data.lng}
+      });
+      var geocoder = new google.maps.Geocoder();
+      document.getElementById('submit').addEventListener('click', function() {
+        geocodeAddress(geocoder, map);
+      });
+      document.getElementById('custom-add-btn').addEventListener('click', function(event){
+        event.preventDefault();
+        dropMarker(map);
+      });
+    }
+  });
+}
+
+function geocodeAddress(geocoder, resultsMap) {
+  var address = document.getElementById('address').value;
+  geocoder.geocode({'address': address}, function(results, status) {
+    if (status === google.maps.GeocoderStatus.OK) {
+      resultsMap.setCenter(results[0].geometry.location);
+      var marker = new google.maps.Marker({
+        map: resultsMap,
+        position: results[0].geometry.location
+      });
+      var long = marker.position.lng();
+      var lat = marker.position.lat();
+      $('#latitude').val(lat);
+      $('#longitude').val(long);
+    } else {
+      alert('Geocode was not successful for the following reason: ' + status);
+    }
+  });
+}
+
+function dropMarker(resultsMap){
+  var infowindow = new google.maps.InfoWindow();
+  var marker_lat;
+  var marker_lng;
+  var city_data = {};
+  $.ajax({
+    url:'/city_data_new?city=<%=@current_city.id%>',
+    success: function(data){
+      parsed_data = JSON.parse(data)
+      city_lat = parseFloat(parsed_data.city.latitude)
+      city_lng = parseFloat(parsed_data.city.longitude)*(-1)
+      city_data.lat = city_lat
+      city_data.lng = city_lng
+      var marker = new google.maps.Marker({
+        position: {lat: city_data.lat, lng: city_data.lng},
+        map: resultsMap,
+        draggable: true,
+        animation: google.maps.Animation.DROP,
+      });
+      var long = marker.position.lng();
+      var lat = marker.position.lat();
+      google.maps.event.addListener(marker, 'dragend', function() {
+        var geocoder = new google.maps.Geocoder();
+        geocoder.geocode({'latLng': marker.getPosition()}, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+              if (results[0]) {
+                $('#latitude').val(results[0].geometry.location.lat());
+                $('#longitude').val(results[0].geometry.location.lng());
+                infowindow.setContent(results[0].formatted_address + '</br>' + 'Location ready to be saved');
+                infowindow.open(map, marker);
+              }
+            }
+        });
+      });
+    }
+  });
+ }
+</script>
+
+<script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxGn34Xr4JBNIC0xYNaK_I4G8_dc4cIMo&callback=initMap">
+</script>
